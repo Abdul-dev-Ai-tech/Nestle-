@@ -241,12 +241,22 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--no-samples", action="store_true")
     ap.add_argument("--purge-samples", action="store_true")
     ap.add_argument("--create-admin", metavar="EMAIL")
+    ap.add_argument("--ensure-admin", metavar="EMAIL",
+                    help="create this Super Admin (password from ADMIN_PASSWORD) unless the account already exists")
     args = ap.parse_args(argv)
     with SessionLocal() as db:
         seed_reference(db)
         print("Roles and permissions are in place.")
         if args.purge_samples:
             print(f"Removed {purge_samples(db)} sample entries.")
+        elif args.ensure_admin:
+            if db.scalar(select(User.id).where(User.email == args.ensure_admin.lower().strip())):
+                print(f"Admin {args.ensure_admin} already exists - unchanged.")
+            elif not os.environ.get("ADMIN_PASSWORD"):
+                raise SystemExit("--ensure-admin needs the ADMIN_PASSWORD environment variable")
+            else:
+                create_admin(db, args.ensure_admin.strip(), os.environ["ADMIN_PASSWORD"])
+                print(f"Super Admin {args.ensure_admin} created.")
         elif args.create_admin:
             pw = os.environ.get("ADMIN_PASSWORD") or getpass.getpass("Password for the new Super Admin: ")
             create_admin(db, args.create_admin, pw)

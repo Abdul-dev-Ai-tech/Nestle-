@@ -2,7 +2,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PLACEHOLDERS = {"", "change-me", "changeme", "replace-with-a-long-random-string"}
@@ -68,6 +68,16 @@ class Settings(BaseSettings):
 
     # --- monitoring ---
     SENTRY_DSN: str = ""
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _psycopg_driver(cls, v: str) -> str:
+        """Hosted providers (Neon, Render, Supabase) hand out postgres:// or postgresql:// URLs; use psycopg 3."""
+        v = v.strip()
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                return "postgresql+psycopg://" + v[len(prefix):]
+        return v
 
     @property
     def cors_origins(self) -> list[str]:
