@@ -11,7 +11,8 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     resolve: { alias: { '@': '/src' } },
     server: { port: 5173, host: true, proxy: { '/api': { target: backend, changeOrigin: false } } },
-    preview: { port: 4173, proxy: { '/api': { target: backend, changeOrigin: false } } },
+    // `npm run preview` serves the production build; start-public.ps1 exposes it through a Cloudflare quick tunnel.
+    preview: { port: 4173, allowedHosts: ['.trycloudflare.com'], proxy: { '/api': { target: backend, changeOrigin: false } } },
     build: { sourcemap: false, chunkSizeWarningLimit: 900 },
     test: { environment: 'jsdom', globals: true, setupFiles: ['./src/test/setup.ts'], css: false },
   };
