@@ -1,0 +1,8 @@
+{
+  "_comment": "Maps class names of YOUR trained YOLO model to the five PPE items. 'present' classes mean the item is worn; 'absent' classes (optional) mean it is visibly missing. Edit to match the names in your dataset.yaml.",
+  "uniform":      {"present": ["uniform", "coverall", "lab_coat"],        "absent": ["no_uniform"]},
+  "hair_cap":     {"present": ["hair_cap", "hairnet", "bouffant_cap"],    "absent": ["no_hair_cap"]},
+  "face_mask":    {"present": ["face_mask", "mask"],                      "absent": ["no_face_mask", "no_mask"]},
+  "beard_net":    {"present": ["beard_net", "beard_cover"],               "absent": ["no_beard_net"]},
+  "safety_shoes": {"present": ["safety_shoes", "safety_boots"],           "absent": ["no_safety_shoes"]}
+}

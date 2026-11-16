@@ -1,0 +1,77 @@
+# Full stack: PostgreSQL + FastAPI backend + web (React build served by Caddy, proxies /api).
+#   docker compose --env-file .env.docker up -d --build
+# Copy .env.docker.example to .env.docker first. See docs/DEPLOYMENT.md.
+name: nestle-ai-compliance
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nec}
+      POSTGRES_USER: ${POSTGRES_USER:-nec_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.docker}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nec_user} -d ${POSTGRES_DB:-nec}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: deployment/docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENV: ${ENV:-staging}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env.docker}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-nec_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-nec}
+      CORS_ORIGINS: ${PUBLIC_URL:-http://localhost}
+      FRONTEND_URL: ${PUBLIC_URL:-http://localhost}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      TRUST_PROXY_HEADERS: "true"
+      CAMERA_CREDENTIALS_KEY: ${CAMERA_CREDENTIALS_KEY:?set CAMERA_CREDENTIALS_KEY in .env.docker}
+      AI_MODE: ${AI_MODE:-disabled}
+      YOLO_WEIGHTS: /app/models/ppe.pt
+      DOOR_MODE: ${DOOR_MODE:-simulation}
+      HARDWARE_DOORS_ENABLED: ${HARDWARE_DOORS_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - storage:/data/storage
+      - ./backend/models:/app/models:ro
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  web:
+    build:
+      context: .
+      dockerfile: deployment/docker/web.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  storage:
+  caddy_data:
+  caddy_config:

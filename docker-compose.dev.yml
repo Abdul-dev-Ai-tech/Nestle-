@@ -1,0 +1,22 @@
+# Development helper: only PostgreSQL, on localhost:5432. Run the backend and frontend natively.
+#   docker compose -f docker-compose.dev.yml up -d
+name: nestle-ai-compliance-dev
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nec
+      POSTGRES_USER: nec_user
+      POSTGRES_PASSWORD: ${DEV_DB_PASSWORD:-dev_password_change_me}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nec_user -d nec"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  pgdata_dev:

@@ -1,0 +1,23 @@
+# Ultralytics dataset description. Copy to dataset.yaml and point `path` at your labelled images.
+# Folder layout:
+#   datasets/ppe/images/{train,val,test}/*.jpg
+#   datasets/ppe/labels/{train,val,test}/*.txt   (YOLO format: class cx cy w h, normalised)
+path: ../datasets/ppe
+train: images/train
+val: images/val
+test: images/test
+
+# Class names must match backend/app/ai/class_map.json.
+# "no_*" classes are optional but strongly recommended: they let the model say an item is visibly
+# missing instead of merely "not found".
+names:
+  0: uniform
+  1: no_uniform
+  2: hair_cap
+  3: no_hair_cap
+  4: face_mask
+  5: no_face_mask
+  6: beard_net
+  7: no_beard_net
+  8: safety_shoes
+  9: no_safety_shoes

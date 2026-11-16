@@ -1,0 +1,17 @@
+# Runtime dependencies (pinned). Verified on Python 3.13 (Windows 11); wheels also exist for 3.12.
+# Python 3.14 is NOT supported by these pins (pydantic-core / psycopg-binary would compile from source).
+fastapi==0.162.7
+uvicorn[standard]==0.34.0
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg[binary]==3.2.3
+pydantic==2.10.4
+pydantic-settings==2.7.0
+email-validator==2.2.0
+argon2-cffi==23.1.0
+cryptography==50.0.2
+python-multipart==0.0.33
+pillow==13.0.0
+httpx==0.28.1
+# Camera access on the server (USB / RTSP). Headless build: no GUI libraries needed.
+opencv-python-headless==4.10.0.84
